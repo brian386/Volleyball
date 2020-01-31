@@ -1,5 +1,5 @@
 import fisica.*;
-
+float pos = 0;
 //pallete
 color blue   = color(29, 178, 242);
 color brown  = color(166, 120, 24);
@@ -11,7 +11,7 @@ FWorld world;
 
 //keys
 boolean wkey, akey, skey, dkey, upkey, downkey, leftkey, rightkey;
-boolean AI = false;
+boolean AI = true;
 FBox lground, rground;
 FCircle ball;
 float r1, r2;
@@ -87,7 +87,7 @@ void draw() {
       i++;
     }
 
-    //MOVEMENT KEYS==================
+    //MOVEMENT KEYS============================
     if (wkey && leftCanJump) P1.addImpulse(0, -2200);
     if (akey) { 
       //P1.addImpulse(-1000, 0);
@@ -100,7 +100,7 @@ void draw() {
 
 
     //P2
-    float pos = 0;
+
     float a, b, c, t, dx;
     if (AI == false) {
       if (upkey && rightCanJump) P2.addImpulse(0, -2200);
@@ -109,118 +109,124 @@ void draw() {
       }
       if (rightkey) {
         P2.setVelocity(300, P2.getVelocityY());
-        ;
       }
 
       if (downkey) P2.addImpulse(0, 100);
     } else {
-      //AI================================================
-      for (FContact con : P1contacts) {
-        if (con.contains(P1)) {
+      //AI==========================================================
+      //for (FContact con : P1contacts) {
+      //  if (con.contains(ball)) {
+      // if(dist(ball.getX(), ball.getY(), P1.getX(), P1.getY())< 100){
+      a = 0.5*900;
+      b = ball.getVelocityY();
+      c = ball.getY() - 500;
+      float determinant = b * b - 4 * a * c;
+      t = (-b + sqrt(determinant)) / (2 * a);
+      dx = ball.getVelocityX()*t;
+      pos = (ball.getVelocityX() >=0) ? ball.getX() +dx+15: ball.getX()+dx+20;
 
-          a = 0.5*ball.getForceY()/ball.getMass();
-          b = ball.getVelocityY();
-          c = 500-ball.getY();
-          float determinant = b * b - 4 * a * c;
-          t = (-b - sqrt(determinant)) / (2 * a);
-          dx = ball.getVelocityX()*t;
-          pos = dx + P1.getX();
-            
-           println(pos);
-          
+      if (pos > 800) pos = 800 - pos%800;
+
+      for (FContact c2 : P2contacts) {
+        if (dist(ball.getX(), ball.getY(), P2.getX(), P2.getY()) < 100 && c2.contains(rground)) {
+          P2.addImpulse(0, -650);
         }
       }
-
-
-      if (P2.getX() > pos) {
-        P2.setVelocity(-300, P2.getVelocityY());
-      } else {
-        P2.setVelocity(300, P2.getVelocityY());
+      //  }
+      //}
+      println(pos);
+      if (pos >400) {
+        if (P2.getX() > pos) {
+          P2.setVelocity(-230, P2.getVelocityY());
+          // P2.addImpulse(-100, 0);
+        } else {
+          P2.setVelocity(230, P2.getVelocityY());
+          //P2.addImpulse(100, 0);
+        }
       }
     }
 
-    if (P1.getRotation() != 0) P1.setRotation(0);
-    if (P2.getRotation() != 0) P2.setRotation(0);
+    P1.setRotatable(false);
+    P2.setRotatable(false);
+    //if (P1.getRotation() != 0) P1.setRotation(0);
+    //if (P2.getRotation() != 0) P2.setRotation(0);
     //if(P1.getVelocityX() > 300) P1.setVelocity(300, P1.getVelocityY());
     //if(P1.getVelocityX() < -300) P1.setVelocity(-300, P1.getVelocityY());
 
     //CANT JUMP OVER NET
-    if (P1.getX() > 400-r1) P1.setPosition(400-r1, P1.getY());
-    if (P2.getX() < 400+r2) P2.setPosition(400+r2, P2.getY());
-     //WIN
-    if(score1 == 3 || score2 ==3){
+    if (P1.getX() > 400-r1-10) P1.setPosition(400-r1-10, P1.getY());
+    if (P2.getX() < 400+r2+10) P2.setPosition(400+r2+10, P2.getY());
+    //WIN
+    if (score1 == 3 || score2 ==3) {
       mode = 1;
     }
-  }
-  else{
+    //DRAW WORLD+++++++++++++++++++++++++++++++++++++++++++++
+    world.step();
+    world.draw();
+    //DRAW EYES==========================================================
+
+    fill(255);
+    ellipse(P1.getX()+25, P1.getY()-20, 30, 30);
+    float p1 = P1.getX() +25;
+    float q1 = P1.getY()-20;
+    float xb1 = ball.getX();
+    float yb1 = ball.getY();
+    //float m = (ball.getY()-P1.getY()+20)/(ball.getX()-P1.getX()-25);
+
+    //float a = 1 + m*m;
+    //float b = -2*xb - 2*m*m*xb + 2*m*yb - 2*m*q;
+    //float c = p*p + m*m*xb*xb - 2*m*xb*yb + 2*m*xb*q + yb*yb - 2*yb*q + q*q -225;
+
+
+    //float determinant = b * b - 4 * a * c;
+    //float x = (-b + sqrt(determinant)) / (2 * a);
+    PVector pvel = new PVector((xb1 -p1), (yb1 -q1));
+    pvel.setMag(8);
+    float px1 = p1;
+    float py1 = q1;
+
+    if (dist(p1, q1, px1, py1) <25) {
+      px1 += pvel.x;
+      py1 += pvel.y;
+    }
+    fill(0);
+    ellipse(px1, py1, 10, 10);
+
+    fill(255);
+    ellipse(P2.getX()-25, P2.getY()-20, 30, 30);
+    float p2 = P2.getX() -25;
+    float q2 = P2.getY()-20;
+    float xb2 = ball.getX();
+    float yb2 = ball.getY();
+
+    PVector pvel2 = new PVector((xb2 -p2), (yb2 -q2));
+    pvel2.setMag(8);
+    float px2 = p2;
+    float py2 = q2;
+
+    if (dist(p2, q2, px2, py2) <25) {
+      px2 += pvel2.x;
+      py2 += pvel2.y;
+    }
+    fill(0);
+    ellipse(px2, py2, 10, 10);
+    //POINTS=============================
+    fill(0);
+    textSize(50);
+    text(score1, 100, 100);
+    text(score2, 700, 100);
+  } else {
+    //MODE 1---------------------------------------------
     background(255);
     textSize(100);
-    if(score1 > score2){
-      text("Player 1 Wins", 100, 100);
-      
-    } else{
-      text("Player 2 Wins", 100, 100);
-      
+    if (score1 > score2) {
+      text("Player 1 Wins", 100, 300);
+    } else {
+      text("Player 2 Wins", 100, 300);
     }
-    
-    
+
+    world = new FWorld();
   }
-
-  world.step();
-  world.draw();
-
-  //DRAW EYES
-
-  fill(255);
-  ellipse(P1.getX()+25, P1.getY()-20, 30, 30);
-  float p1 = P1.getX() +25;
-  float q1 = P1.getY()-20;
-  float xb1 = ball.getX();
-  float yb1 = ball.getY();
-  //float m = (ball.getY()-P1.getY()+20)/(ball.getX()-P1.getX()-25);
-
-  //float a = 1 + m*m;
-  //float b = -2*xb - 2*m*m*xb + 2*m*yb - 2*m*q;
-  //float c = p*p + m*m*xb*xb - 2*m*xb*yb + 2*m*xb*q + yb*yb - 2*yb*q + q*q -225;
-
-
-  //float determinant = b * b - 4 * a * c;
-  //float x = (-b + sqrt(determinant)) / (2 * a);
-  PVector pvel = new PVector((xb1 -p1), (yb1 -q1));
-  pvel.setMag(8);
-  float px1 = p1;
-  float py1 = q1;
-
-  if (dist(p1, q1, px1, py1) <25) {
-    px1 += pvel.x;
-    py1 += pvel.y;
-  }
-  fill(0);
-  ellipse(px1, py1, 10, 10);
-
-  fill(255);
-  ellipse(P2.getX()-25, P2.getY()-20, 30, 30);
-  float p2 = P2.getX() -25;
-  float q2 = P2.getY()-20;
-  float xb2 = ball.getX();
-  float yb2 = ball.getY();
-
-  PVector pvel2 = new PVector((xb2 -p2), (yb2 -q2));
-  pvel2.setMag(8);
-  float px2 = p2;
-  float py2 = q2;
-
-  if (dist(p2, q2, px2, py2) <25) {
-    px2 += pvel2.x;
-    py2 += pvel2.y;
-  }
-  fill(0);
-  ellipse(px2, py2, 10, 10);
-  //POINTS=============================
-  fill(0);
-  textSize(50);
-  text(score1, 100, 100);
-  text(score2, 700, 100);
 }
 
 //MAKE COURT=====================================================================
@@ -311,7 +317,7 @@ void makePlayers() {
   ball = new FCircle(20);
   ball.setPosition(width/4, 150);
   ball.setFillColor(yellow);
-  ball.setRestitution(.8);
+  ball.setRestitution(.6);
   ball.setDensity(0.01);
   ball.attachImage(ballImage);
   world.add(ball);
@@ -355,11 +361,11 @@ void keyReleased() {
   if (keyCode == DOWN) downkey = false;
 }
 
-void mouseReleased(){
-  if(mode !=0){
+void mouseReleased() {
+  if (mode !=0) {
     mode = 0;
+    setup();
     score1 = 0;
     score2 = 0;
   }
-  
 }
