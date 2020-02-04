@@ -103,7 +103,7 @@ void draw() {
 
     float a, b, c, t, dx;
     if (AI == false) {
-      if (upkey && rightCanJump) P2.addImpulse(0, -2200);
+      if (upkey && rightCanJump) P2.addImpulse(0, -2000);
       if (leftkey) { 
         P2.setVelocity(-300, P2.getVelocityY());
       }
@@ -117,7 +117,8 @@ void draw() {
       //for (FContact con : P1contacts) {
       //  if (con.contains(ball)) {
       // if(dist(ball.getX(), ball.getY(), P1.getX(), P1.getY())< 100){
-      a = 0.5*900;
+       //POSITION
+        a = 0.5*900;
       b = ball.getVelocityY();
       c = ball.getY() - 500;
       float determinant = b * b - 4 * a * c;
@@ -126,23 +127,26 @@ void draw() {
       pos = (ball.getVelocityX() >=0) ? ball.getX() +dx+15: ball.getX()+dx+20;
 
       if (pos > 800) pos = 800 - pos%800;
-
+      if (pos < 400) pos = 600;
+      
       for (FContact c2 : P2contacts) {
         if (dist(ball.getX(), ball.getY(), P2.getX(), P2.getY()) < 100 && c2.contains(rground)) {
-          P2.addImpulse(0, -650);
+          P2.addImpulse(0, -600);
         }
       }
       //  }
       //}
       println(pos);
-      if (pos >400) {
-        if (P2.getX() > pos) {
-          P2.setVelocity(-230, P2.getVelocityY());
-          // P2.addImpulse(-100, 0);
-        } else {
-          P2.setVelocity(230, P2.getVelocityY());
-          //P2.addImpulse(100, 0);
-        }
+      //AI MOVING_______________
+      
+      if (P2.getX() > pos+2) {
+        P2.setVelocity(-260, P2.getVelocityY());
+        // P2.addImpulse(-100, 0);
+      } else if(P2.getX() < pos-2){
+        P2.setVelocity(260, P2.getVelocityY());
+        //P2.addImpulse(100, 0);
+      } else{
+        P2.setVelocity(0, P2.getVelocityY());
       }
     }
 
@@ -232,7 +236,7 @@ void draw() {
 //MAKE COURT=====================================================================
 void makeCourt() {
   //LEFT WALL
-  FBox LWall = new FBox(50, height);
+  FBox LWall = new FBox(50, 4*height);
   LWall.setPosition(-25, height/2);
   //vis
   LWall.setFill(0);
@@ -242,7 +246,7 @@ void makeCourt() {
   world.add(LWall);
 
   //RIGHT WALL
-  FBox RWall = new FBox(50, height);
+  FBox RWall = new FBox(50, 4*height);
   RWall.setPosition(width+24, height/2);
   //vis
   RWall.setFill(0);
@@ -317,8 +321,8 @@ void makePlayers() {
   ball = new FCircle(20);
   ball.setPosition(width/4, 150);
   ball.setFillColor(yellow);
-  ball.setRestitution(.6);
-  ball.setDensity(0.01);
+  ball.setRestitution(1);
+  ball.setDensity(3);
   ball.attachImage(ballImage);
   world.add(ball);
 }
